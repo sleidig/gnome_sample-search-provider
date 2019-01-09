@@ -59,100 +59,66 @@ class GenericSearchProvider {
         this._isRelevantSearchTerms = isRelevantSearchTermsFunction;
         this._api = clientApi;
 
-        Gtk.IconTheme.get_default().append_search_path(
-            Extension.dir.get_child('icons').get_path());
-        // Use the default app for opening https links as the app for
-        // launching full search.
-        this.appInfo = Gio.AppInfo.get_default_for_uri_scheme('https');
-        // Fake the name and icon of the app
-        this.appInfo.get_name = ()=>{
-            return this._appName;
-        };
-        this.appInfo.get_icon = ()=>{
-            return new Gio.ThemedIcon({name: iconName});
-            //return Gio.icon_new_for_string(Extension.path + "/dictionary.svg");
-        };
+        Gtk.IconTheme.get_default().append_search_path(Extension.dir.get_child('icons').get_path());
 
-        // Custom messages that will be shown as search results
-        this._messages = {
-            '__loading__': {
-                id: '__loading__',
-                name: _(this._appName),
-                description : _('Loading items from '+this._appName+', please wait...'),
-                // TODO: do these kinds of icon creations better
-                createIcon: this.createIconGenerator()
-            },
-            '__error__': {
-                id: '__error__',
-                name: _(this._appName),
-                description : _('Oops, an error occurred while searching.'),
-                createIcon: this.createIconGenerator()
-            }
-        };
-        // API results will be stored here
-        this.resultsMap = new Map();
+        this.appInfo = this._getAppInfoForOpeningFullSearch();
+        this._messages = this._getMessagesAsResults();
+        this.resultsMap = new Map(); // API results will be stored here; key:string, value:metaObject (see _getMessagesAsResults() for examples)
+
         // Wait before making an API request
         this._timeoutId = 0;
     }
 
     /**
-     * Launch the search in the default app (i.e. browser)
-     * @param {String[]} terms
+     * Get AppInfo of the app with which full search should be launched.
+     * @returns {Gio.AppInfo}
+     * @private
      */
-    /*
-    launchSearch(terms) {
-        Util.trySpawnCommandLine(
-            "xdg-open " + this._api.getFullSearchUrl(this._getQuery(terms)));
-    }
-    */
-    /**
-     * Open the url in default app
-     * @param {String} identifier
-     * @param {Array} terms
-     * @param timestamp
-     */
-    activateResult(identifier, terms, timestamp) {
-        let result;
-        // only do something if the result is not a custom message
-        if (!(identifier in this._messages)) {
-            result = this.resultsMap.get(identifier);
-            if (result) {
-                Util.trySpawnCommandLine(
-                    "xdg-open " + result.url);
-            }
-        }
-    }
-    /**
-     * Run callback with results
-     * @param {Array} identifiers
-     * @param {Function} callback
-     */
-    getResultMetas(identifiers, callback) {
-        let metas = [];
-        for (let i = 0; i < identifiers.length; i++) {
-            let result;
-            // return predefined message if it exists
-            if (identifiers[i] in this._messages) {
-                metas.push(this._messages[identifiers[i]]);
-            } else {
-                // TODO: check for messages that don't exist, show generic error message
-                let meta = this.resultsMap.get(identifiers[i]);
-                if (meta){
-                    metas.push({
-                        id: meta.id,
-                        name: meta.description,
-                        //description : meta.description,
-                        createIcon: this.createIconGenerator()
-                    });
-                }
-            }
-        }
-        callback(metas);
+    _getAppInfoForOpeningFullSearch() {
+        // Use the default app for opening https links as the app for launching full search.
+        let app = Gio.AppInfo.get_default_for_uri_scheme('https');
+        // Fake the name and icon of the app
+        app.get_name = () => { return this._appName; };
+        app.get_icon = () => { return new Gio.ThemedIcon({name: this._iconName}); };
+        return app;
     }
 
     /**
-     * Search API if the query is a Wikidata query.
-     * Wikidata query must start with a 'wd' as the first term.
+     * Return custom messages that will be shown as search results
+     */
+    _getMessagesAsResults() {
+        return {
+            '__loading__': {
+                id: '__loading__',
+                name: _(this._appName),
+                description : _('Loading items from '+this._appName+', please wait...'),
+                // TODO: do these kinds of icon creations better
+                createIcon: this._createIconGenerator()
+            },
+            '__error__': {
+                id: '__error__',
+                name: _(this._appName),
+                description : _('Oops, an error occurred while searching.'),
+                createIcon: this._createIconGenerator()
+            }
+        };
+    }
+
+    _createIconGenerator() {
+        let iconName = this._iconName;
+        return (size) => {
+            let box = new Clutter.Box();
+            let icon = new St.Icon({gicon: new Gio.ThemedIcon({name: iconName}), icon_size: size});
+            box.add_child(icon);
+            return box;
+        };
+    }
+
+
+
+    /**
+     * Search API if the query is matches the SEARCH_TERMS_FILTER for the app.
+     * This function is called by GNOME Shell when the user starts a search.
      * @param {Array} terms
      * @param {Function} callback
      * @param {Gio.Cancellable} cancellable
@@ -160,7 +126,7 @@ class GenericSearchProvider {
     getInitialResultSet(terms, callback, cancellable) {
         if (terms != null && terms.length >= 1 && this._isRelevantSearchTerms(terms)) {
             // show the loading message
-            this.showMessage('__loading__', callback);
+            this._showMessage('__loading__', callback);
             // remove previous timeout
             if (this._timeoutId > 0) {
                 GLib.source_remove(this._timeoutId);
@@ -183,33 +149,10 @@ class GenericSearchProvider {
     /**
      * Show any message as a search item
      * @param {String} identifier Message identifier
-     * @param {Function} callback Callback that pushes the result to search
-     * overview
+     * @param {Function} callback Callback that pushes the result to search overview
      */
-    showMessage(identifier, callback) {
+    _showMessage(identifier, callback) {
         callback([identifier]);
-    }
-
-    /**
-     * TODO: implement
-     * @param {Array} previousResults
-     * @param {Array} terms
-     * @returns {Array}
-     */
-    getSubsetResultSearch(previousResults, terms) {
-        return [];
-    }
-
-    /**
-     * Return subset of results
-     * @param {Array} results
-     * @param {number} max
-     * @returns {Array}
-     */
-    filterResults(results, max) {
-        // override max for now
-        max = this._api.limit; //TODO: _api.limit is probably never defined! (at least WordReferenceClient never sets it)
-        return results.slice(0, max);
     }
 
     /**
@@ -230,23 +173,98 @@ class GenericSearchProvider {
             callback(results);
         } else if (error) {
             // Let the user know that an error has occurred.
-            this.showMessage('__error__', callback);
+            this._showMessage('__error__', callback);
         }
     }
 
+
+
     /**
-     * Create meta icon
-     * @param size
-     * @param {Object} meta
+     * Run callback with results
+     * //TODO: what does this mean? When/How is this executed exactly?
+     * @param {Array} identifiers
+     * @param {Function} callback
      */
-    createIconGenerator() {
-        let iconName = this._iconName;
-        return (size) => {
-            let box = new Clutter.Box();
-            let icon = new St.Icon({gicon: new Gio.ThemedIcon({name: iconName}), icon_size: size});
-            box.add_child(icon);
-            return box;
-        };
+    getResultMetas(identifiers, callback) {
+        let metas = [];
+        for (let i = 0; i < identifiers.length; i++) {
+            let result;
+            // return predefined message if it exists
+            if (identifiers[i] in this._messages) {
+                metas.push(this._messages[identifiers[i]]);
+            } else {
+                // TODO: check for messages that don't exist, show generic error message
+                let meta = this.resultsMap.get(identifiers[i]);
+                if (meta){
+                    metas.push({
+                        id: meta.id,
+                        name: meta.name,
+                        //description: meta.description,
+                        createIcon: this._createIconGenerator()
+                    });
+                }
+            }
+        }
+        callback(metas);
+    }
+
+
+
+    /**
+     * Open the url in default app.
+     * This function is called by GNOME Shell when the user clicks on a result.
+     * @param {String} identifier
+     * @param {Array} terms
+     * @param timestamp
+     */
+    activateResult(identifier, terms, timestamp) {
+        let result;
+        // only do something if the result is not a custom message
+        if (!(identifier in this._messages)) {
+            result = this.resultsMap.get(identifier);
+            if (result) {
+                Util.trySpawnCommandLine("xdg-open " + result.url);
+            }
+        }
+    }
+
+
+
+    /**
+     * Launch the search in the default app (i.e. browser)
+     * @param {String[]} terms
+     */
+    /*
+    launchSearch(terms) {
+        Util.trySpawnCommandLine(
+            "xdg-open " + this._api.getFullSearchUrl(this._getQuery(terms)));
+    }
+    */
+
+
+
+    /**
+     * Return subset of results
+     * @param {Array} results
+     * @param {number} max
+     * @returns {Array}
+     */
+    filterResults(results, max) {
+        // override max for now
+        max = this._api.limit; //TODO: _api.limit is probably never defined! (at least WordReferenceClient never sets it)
+        return results.slice(0, max);
+    }
+
+
+
+    /**
+     * TODO: implement
+     * @param {Array} previousResults
+     * @param {Array} terms
+     * @returns {Array}
+     */
+    getSubsetResultSearch(previousResults, terms) {
+        return [];
     }
 }
 

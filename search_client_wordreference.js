@@ -108,6 +108,7 @@ class WordReferenceClient{
                                         id: 'index_'+i,
                                         label: word.substring(2).trim(),
                                         url: query_url,
+                                        name: item,
                                         description: item
                                     });
                                     i+=1;
@@ -138,6 +139,7 @@ class WordReferenceClient{
                                             id: 'index_'+i,
                                             label: word.substring(2).trim(),
                                             url: query_url,
+                                            name: item,
                                             description: item
                                         });
                                         i+=1;
@@ -172,6 +174,7 @@ class WordReferenceClient{
                                                 id: 'index_'+i,
                                                 label: word.substring(2).trim(),
                                                 url: query_url,
+                                                name: item.trim(),
                                                 description: item.trim()
                                             });
                                         }
