@@ -1,1 +1,8 @@
-{"name": "Evernote Search Provider", "description": "Search your Evernote notes through GNOME Shell", "uuid": "evernote-search-provider@sebastian.leidig.gmail.com", "shell-version": ["3.30.1"]}
+{
+  "name": "Evernote Search Provider",
+  "description": "Search your Evernote notes through GNOME Shell",
+  "uuid": "evernote-search-provider@sebastian.leidig.gmail.com",
+  "shell-version": ["3.30.1"],
+  "gettext-domain": "evernote-search-provider@sebastian.leidig.gmail.com",
+  "settings-schema": "evernote-search-provider"
+}

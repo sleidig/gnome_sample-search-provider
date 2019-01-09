@@ -1,20 +1,21 @@
 /*
- * WordReference Search Provider
- * An extension to search definitions and synonyms in WordReference
- * with GNOME Shell
+ * Evernote Search Provider
+ * Search your Evernote notes with GNOME Shell
  *
- * Copyright (C) 2018
- *     Lorenzo Carbonell <lorenzo.carbonell.cerezo@gmail.com>,
- * https://www.atareao.es
+ * Copyright (C) 2019
+ *     Sebastian Leidig <sebastian.leidig@gmail.com
  *
- * This file is part of WordReference Search Provider
+ * based on WordReference Search Provider by
+ *     Lorenzo Carbonell <lorenzo.carbonell.cerezo@gmail.com>, https://www.atareao.es
  *
- * WordReference Search Provider is free software: you can redistribute it and/or modify
+ * This file is part of Evernote Search Provider
+ *
+ * Evernote Search Provider is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * WordReference Search Provider is distributed in the hope that it will be useful,
+ * Evernote Search Provider is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -24,8 +25,6 @@
  * If not, see <http://www.gnu.org/licenses/>.
   */
 
-// To debug: log('blah');
-// And run: journalctl /usr/bin/gnome-session -f -o cat | grep LOG
 const St = imports.gi.St;
 const Main = imports.ui.main;
 const Gio = imports.gi.Gio;
@@ -41,10 +40,10 @@ const Convenience = Extension.imports.convenience;
 const Gettext = imports.gettext.domain(Extension.metadata.uuid);
 const _ = Gettext.gettext;
 
-class WordReferenceSearchProvider{
-    constructor(){
+class GenericSearchProvider {
+    constructor() {
+        this._api = new WordReferenceClient.WordReferenceClient();
 
-        //this._settings = Convenience.getSettings();
         Gtk.IconTheme.get_default().append_search_path(
             Extension.dir.get_child('icons').get_path());
         // Use the default app for opening https links as the app for
@@ -52,10 +51,10 @@ class WordReferenceSearchProvider{
         this.appInfo = Gio.AppInfo.get_default_for_uri_scheme('https');
         // Fake the name and icon of the app
         this.appInfo.get_name = ()=>{
-            return 'WordReference Search Provider';
+            return 'Evernote Search';
         };
         this.appInfo.get_icon = ()=>{
-            return new Gio.ThemedIcon({name: "dictionary"});
+            return new Gio.ThemedIcon({name: 'tusk-search'});
             //return Gio.icon_new_for_string(Extension.path + "/dictionary.svg");
         };
 
@@ -63,25 +62,22 @@ class WordReferenceSearchProvider{
         this._messages = {
             '__loading__': {
                 id: '__loading__',
-                name: _('WordReference'),
-                description : _('Loading items from WordReference, please wait...'),
+                name: _('Evernote Search'),
+                description : _('Loading items from '+'Evernote Search'+', please wait...'),
                 // TODO: do these kinds of icon creations better
                 createIcon: this.createIcon
             },
             '__error__': {
                 id: '__error__',
-                name: _('WordReference'),
+                name: _('Evernote Search'),
                 description : _('Oops, an error occurred while searching.'),
                 createIcon: this.createIcon
             }
         };
         // API results will be stored here
         this.resultsMap = new Map();
-        this._api = new WordReferenceClient.WordReferenceClient();
         // Wait before making an API request
         this._timeoutId = 0;
-
-
     }
 
     /**
@@ -147,11 +143,6 @@ class WordReferenceSearchProvider{
      * @param {Gio.Cancellable} cancellable
      */
     getInitialResultSet(terms, callback, cancellable) {
-        // terms holds array of search items
-        // The first term must start with a 'wd' (=wikidata).
-        // It can be of the form 'wd', 'wd-en', 'wd-ru'. The part after
-        // the dash is the search language.
-
         if (terms != null && terms.length >= 1 && (terms[0].substring(0, 2) === 'd:' || terms[0].substring(0, 2) === 's:')) {
             // show the loading message
             this.showMessage('__loading__', callback);
@@ -246,33 +237,33 @@ class WordReferenceSearchProvider{
      */
     createIcon(size) {
         let box = new Clutter.Box();
-        let icon = new St.Icon({gicon: new Gio.ThemedIcon({name: 'dictionary'}),
+        let icon = new St.Icon({gicon: new Gio.ThemedIcon({name: 'tusk-search'}),
             icon_size: size});
         box.add_child(icon);
         return box;
     }
 }
 
-let wordReferenceSearchProvider = null;
+let searchProvider = null;
 
 function init() {
     Convenience.initTranslations();
 }
 
 function enable() {
-    if (!wordReferenceSearchProvider) {
-        wordReferenceSearchProvider = new WordReferenceSearchProvider();
+    if (!searchProvider) {
+        searchProvider = new GenericSearchProvider(); //appName, iconName, searchTermsFilter, client);
         Main.overview.viewSelector._searchResults._registerProvider(
-            wordReferenceSearchProvider
+            searchProvider
         );
     }
 }
 
 function disable() {
-    if (wordReferenceSearchProvider){
+    if (searchProvider){
         Main.overview.viewSelector._searchResults._unregisterProvider(
-            wordReferenceSearchProvider
+            searchProvider
         );
-        wordReferenceSearchProvider = null;
+        searchProvider = null;
     }
 }
