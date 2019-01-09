@@ -25,6 +25,9 @@
  * If not, see <http://www.gnu.org/licenses/>.
   */
 
+
+
+/** IMPORTS **/
 const St = imports.gi.St;
 const Main = imports.ui.main;
 const Gio = imports.gi.Gio;
@@ -34,15 +37,27 @@ const Clutter = imports.gi.Clutter;
 const Util = imports.misc.util;
 
 const Extension = imports.misc.extensionUtils.getCurrentExtension();
-const WordReferenceClient = Extension.imports.wordreference_client;
 const Convenience = Extension.imports.convenience;
 
 const Gettext = imports.gettext.domain(Extension.metadata.uuid);
 const _ = Gettext.gettext;
 
+
+
+/** APP CONFIG **/
+const APP_NAME = 'Evernote Search';
+const ICON_NAME = 'tusk-search';
+const SEARCH_TERMS_FILTER = (terms => { return (terms[0].substring(0, 2) === 'd:' || terms[0].substring(0, 2) === 's:'); });
+const SEARCH_CLIENT = Extension.imports.search_client_wordreference; // must implement a factory method `getSearchClient()`
+
+
+
 class GenericSearchProvider {
-    constructor() {
-        this._api = new WordReferenceClient.WordReferenceClient();
+    constructor(appName, iconName, isRelevantSearchTermsFunction, clientApi) {
+        this._appName = appName;
+        this._iconName = iconName;
+        this._isRelevantSearchTerms = isRelevantSearchTermsFunction;
+        this._api = clientApi;
 
         Gtk.IconTheme.get_default().append_search_path(
             Extension.dir.get_child('icons').get_path());
@@ -51,10 +66,10 @@ class GenericSearchProvider {
         this.appInfo = Gio.AppInfo.get_default_for_uri_scheme('https');
         // Fake the name and icon of the app
         this.appInfo.get_name = ()=>{
-            return 'Evernote Search';
+            return this._appName;
         };
         this.appInfo.get_icon = ()=>{
-            return new Gio.ThemedIcon({name: 'tusk-search'});
+            return new Gio.ThemedIcon({name: iconName});
             //return Gio.icon_new_for_string(Extension.path + "/dictionary.svg");
         };
 
@@ -62,16 +77,16 @@ class GenericSearchProvider {
         this._messages = {
             '__loading__': {
                 id: '__loading__',
-                name: _('Evernote Search'),
-                description : _('Loading items from '+'Evernote Search'+', please wait...'),
+                name: _(this._appName),
+                description : _('Loading items from '+this._appName+', please wait...'),
                 // TODO: do these kinds of icon creations better
-                createIcon: this.createIcon
+                createIcon: this.createIconGenerator()
             },
             '__error__': {
                 id: '__error__',
-                name: _('Evernote Search'),
+                name: _(this._appName),
                 description : _('Oops, an error occurred while searching.'),
-                createIcon: this.createIcon
+                createIcon: this.createIconGenerator()
             }
         };
         // API results will be stored here
@@ -127,7 +142,7 @@ class GenericSearchProvider {
                         id: meta.id,
                         name: meta.description,
                         //description : meta.description,
-                        createIcon: this.createIcon
+                        createIcon: this.createIconGenerator()
                     });
                 }
             }
@@ -143,7 +158,7 @@ class GenericSearchProvider {
      * @param {Gio.Cancellable} cancellable
      */
     getInitialResultSet(terms, callback, cancellable) {
-        if (terms != null && terms.length >= 1 && (terms[0].substring(0, 2) === 'd:' || terms[0].substring(0, 2) === 's:')) {
+        if (terms != null && terms.length >= 1 && this._isRelevantSearchTerms(terms)) {
             // show the loading message
             this.showMessage('__loading__', callback);
             // remove previous timeout
@@ -235,14 +250,18 @@ class GenericSearchProvider {
      * @param size
      * @param {Object} meta
      */
-    createIcon(size) {
-        let box = new Clutter.Box();
-        let icon = new St.Icon({gicon: new Gio.ThemedIcon({name: 'tusk-search'}),
-            icon_size: size});
-        box.add_child(icon);
-        return box;
+    createIconGenerator() {
+        let iconName = this._iconName;
+        return (size) => {
+            let box = new Clutter.Box();
+            let icon = new St.Icon({gicon: new Gio.ThemedIcon({name: iconName}), icon_size: size});
+            box.add_child(icon);
+            return box;
+        };
     }
 }
+
+
 
 let searchProvider = null;
 
@@ -252,7 +271,8 @@ function init() {
 
 function enable() {
     if (!searchProvider) {
-        searchProvider = new GenericSearchProvider(); //appName, iconName, searchTermsFilter, client);
+        let client = SEARCH_CLIENT.getSearchClient();
+        searchProvider = new GenericSearchProvider(APP_NAME, ICON_NAME, SEARCH_TERMS_FILTER, client);
         Main.overview.viewSelector._searchResults._registerProvider(
             searchProvider
         );

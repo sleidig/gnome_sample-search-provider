@@ -233,3 +233,9 @@ function _get_soup_session() {
 
     return _SESSION;
 }
+
+
+
+function getSearchClient() {
+    return new WordReferenceClient();
+}
