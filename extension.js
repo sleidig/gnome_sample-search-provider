@@ -48,7 +48,7 @@ const _ = Gettext.gettext;
 const APP_NAME = 'Evernote Search';
 const ICON_NAME = 'tusk-search';
 const SEARCH_TERMS_FILTER = (terms => { return (terms[0].substring(0, 2) === 'd:' || terms[0].substring(0, 2) === 's:'); });
-const SEARCH_CLIENT = Extension.imports.search_client_wordreference; // must implement a factory method `getSearchClient()`
+const SEARCH_CLIENT = Extension.imports.search_client_sample; // see search_client_sample.js
 
 
 
