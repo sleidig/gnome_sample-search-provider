@@ -169,10 +169,8 @@ class GenericSearchProvider {
             this._timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 800, () => {
                 // now search
                 this._api.get(
-                    this._getQuery(terms.join(' ')),
-                    this._getResultSet.bind(this),
-                    callback,
-                    this._timeoutId
+                    terms.join(' '),
+                    (error, result) => { this._getResultSet.bind(this)(error, result, callback, this._timeoutId); }
                 );
                 return false;
             });
@@ -210,17 +208,8 @@ class GenericSearchProvider {
      */
     filterResults(results, max) {
         // override max for now
-        max = this._api.limit;
+        max = this._api.limit; //TODO: _api.limit is probably never defined! (at least WordReferenceClient never sets it)
         return results.slice(0, max);
-    }
-
-    /**
-     * Return query string from terms array
-     * @param {String[]} terms
-     * @returns {String}
-     */
-    _getQuery(terms) {
-        return terms;
     }
 
     /**

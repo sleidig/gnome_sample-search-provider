@@ -72,7 +72,7 @@ class WordReferenceClient{
         );
         return url;
     }
-    get(word, callback, p1, p2) {
+    get(word, callback) {
         let query_url = this._build_query_url(word);
         let request = Soup.Message.new('GET', query_url);
 
@@ -114,7 +114,7 @@ class WordReferenceClient{
                                 }
                             }
                             if(results.length > 0){
-                                callback(null, results, p1, p2);
+                                callback(null, results);
                                 return;
                             }
                         }else if(word.substring(0, 1) == 's' && this._synonyms == 'synonyms'){
@@ -144,7 +144,7 @@ class WordReferenceClient{
                                     }
                                 }
                                 if(results.length > 0){
-                                    callback(null, results, p1, p2);
+                                    callback(null, results);
                                     return;
                                 }
                             }
@@ -179,7 +179,7 @@ class WordReferenceClient{
                                     i+=1;
                                 });
                                 if(results.length > 0){
-                                    callback(null, results, p1, p2);
+                                    callback(null, results);
                                     return;
                                 }
                             }
@@ -187,14 +187,14 @@ class WordReferenceClient{
                     }
                     catch(e) {
                         let message = "WordReference.Client:get(): %s".format(e);
-                        callback(message, null, p1, p2);
+                        callback(message, null);
                         return;
                     }
                 }
             }
         );
         let message = "Nothing found";
-        callback(message, null, p1, p2);
+        callback(message, null);
     }
     destroy() {
         _get_soup_session().run_dispose();
