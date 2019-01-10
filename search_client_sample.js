@@ -27,7 +27,7 @@
 
 const Soup = imports.gi.Soup;
 const Extension = imports.misc.extensionUtils.getCurrentExtension();
-const Convenience = Extension.imports.convenience;
+const Utils = Extension.imports.utils;
 
 
 
@@ -42,7 +42,7 @@ class SampleSearchClient {
     constructor() {
         this.protocol = PROTOCOL;
         this.base_url = BASE_URL;
-        this._settings = Convenience.getSettings();
+        this._settings = Utils.getSettings();
         this._settings.connect("changed", () => { /* update config for new settings if necessary */ });
     }
 

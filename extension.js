@@ -37,7 +37,7 @@ const Clutter = imports.gi.Clutter;
 const Util = imports.misc.util;
 
 const Extension = imports.misc.extensionUtils.getCurrentExtension();
-const Convenience = Extension.imports.convenience;
+const Utils = Extension.imports.utils;
 
 const Gettext = imports.gettext.domain(Extension.metadata.uuid);
 const _ = Gettext.gettext;
@@ -273,7 +273,7 @@ class GenericSearchProvider {
 let searchProvider = null;
 
 function init() {
-    Convenience.initTranslations();
+    Utils.initTranslations();
 }
 
 function enable() {
