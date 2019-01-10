@@ -266,6 +266,12 @@ class GenericSearchProvider {
     getSubsetResultSearch(previousResults, terms) {
         return [];
     }
+
+
+
+    destroy() {
+        this._api.destroy();
+    }
 }
 
 
@@ -288,6 +294,8 @@ function enable() {
 
 function disable() {
     if (searchProvider){
+        searchProvider.destroy();
+
         Main.overview.viewSelector._searchResults._unregisterProvider(
             searchProvider
         );

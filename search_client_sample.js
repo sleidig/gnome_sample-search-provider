@@ -40,27 +40,12 @@ const HTTP_TIMEOUT = 10;
 
 class SampleSearchClient {
     constructor() {
-        this.protocol = PROTOCOL;
-        this.base_url = BASE_URL;
+        this._protocol = PROTOCOL;
+        this._base_url = BASE_URL;
         this._settings = Utils.getSettings();
         this._settings.connect("changed", () => { /* update config for new settings if necessary */ });
     }
 
-    get protocol() {
-        return this._protocol;
-    }
-
-    set protocol(protocol) {
-        this._protocol = protocol;
-    }
-
-    get base_url() {
-        return this._base_url;
-    }
-
-    set base_url(url) {
-        this._base_url = url;
-    }
 
 
     /**
@@ -102,8 +87,8 @@ class SampleSearchClient {
         let dictionary = "definition";
         let word = searchterm.substring(2).trim();
         let url = '%s://%s/%s/%s'.format(
-            this.protocol,
-            this.base_url,
+            this._protocol,
+            this._base_url,
             dictionary,
             encodeURIComponent(word)
         );
