@@ -1,6 +1,8 @@
 /*
- * Evernote Search Provider
- * Search your Evernote notes with GNOME Shell
+ * Sample Search Provider
+ * A sample and base project to integrate custom search providers in GNOME Shell.
+ * This code provides a simple outline for a GNOME Extension that adds a new search into
+ * the GNOME Shell search.
  *
  * Copyright (C) 2019
  *     Sebastian Leidig <sebastian.leidig@gmail.com
@@ -8,14 +10,14 @@
  * based on WordReference Search Provider by
  *     Lorenzo Carbonell <lorenzo.carbonell.cerezo@gmail.com>, https://www.atareao.es
  *
- * This file is part of Evernote Search Provider
+ * This file is part of Sample Search Provider
  *
- * Evernote Search Provider is free software: you can redistribute it and/or modify
+ * Sample Search Provider is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Evernote Search Provider is distributed in the hope that it will be useful,
+ * Sample Search Provider is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -128,6 +130,8 @@ class SampleSearchClient {
     }
 }
 
+
+
 //TODO: should/could _SESSION be inside the SearchClient class?
 let _SESSION = null;
 
@@ -147,6 +151,12 @@ function _get_soup_session() {
 
 
 
+/**
+ * Factory function called by extension.js to get an instance of a SearchClient.
+ * @returns {SearchClient} instance of a SearchClient implementation providing the following methods:
+ *             get(searchterm, callback)
+ *             destroy()
+ */
 function getSearchClient() {
     return new SampleSearchClient();
 }
