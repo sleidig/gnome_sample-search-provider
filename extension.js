@@ -54,6 +54,11 @@ const SEARCH_CLIENT = Extension.imports.search_client_sample; // see search_clie
 
 
 
+/**
+ * Wraps a "Search Client" implementation (see search_client_sample.js) and 
+ * implements the methods required for GNOME Shell Extension to be used as a search provider.
+ * An instance of this class can be registered with GNOME using "Main.overview.viewSelector._searchResults._registerProvider(genericSearchProviderInstance)"
+ */
 class GenericSearchProvider {
     constructor(appName, iconName, isRelevantSearchTermsFunction, clientApi) {
         this._appName = appName;
@@ -280,10 +285,21 @@ class GenericSearchProvider {
 
 let searchProvider = null;
 
+
+/**
+ * Will be invoked by GNOME Shell at most once directly after your source JS file is loaded.
+ * Setup whatever needs to be setup here, such as labels, text, icons or actors, prior to enabling the extension. It is only called once per shell session.
+ * You should make user interfaces visible/hidden in the separate enable/disable functions.
+ */
 function init() {
     Utils.initTranslations();
 }
 
+
+/**
+ * Will be invoked by GNOME Shell when the extension is enabled by the user in the OS.
+ * Make the Shell extension’s UI visible to the user here.
+ */
 function enable() {
     if (!searchProvider) {
         let client = SEARCH_CLIENT.getSearchClient();
@@ -294,6 +310,11 @@ function enable() {
     }
 }
 
+
+/**
+ * Will be invoked by GNOME Shell when the extension is disabled by the user in the OS.
+ * Hide the Shell extension’s UI here.
+ */
 function disable() {
     if (searchProvider){
         searchProvider.destroy();
