@@ -4,6 +4,9 @@ to you to integrate custom search providers in GNOME Shell (i.e. the default ove
 This project can serve as a tutorial as well as a base project for your custom search providers.
 
 
+# Existing useful GNOME Shell Search Providers
+- [Recoll Search Provider](https://github.com/sleidig/gnome_recoll-search-provider) integrates the recoll full-text search results into GNOME Shell
+
 
 # Build your custom Search Provider Extension
 
