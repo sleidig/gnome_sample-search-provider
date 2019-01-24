@@ -27,7 +27,10 @@ This code can also be used to built your own search provider extension for other
 2. run `glib-compile-schemas ./schemas` to compile a binary version of your settings
 
 ## Implement your search client (retrieving the search results)
-1. Copy "search_client_sample.js" to get started and adapt it to conduct the type of search you want.
+The "search client" is your code actually managing the retrieval of search results independent of GNOME Shell specifics.
+You can base your implementation on one of the existing samples getting results from an *online source* or from a simple *commandline (console) output*.
+
+1. Copy "search_client_sample_from_web.js" or "search_client_sample_from_console.js" to get started and adapt it to conduct the type of search you want.
 2. Functions prefixed with `_` (e.g. `_buildQueryUrl()`) are considered private, feel free to change their names or remove them.
 3. If you want to use your "search client" implementation without changing the "extension.js" code, your "search client" 
 needs to implement at least `function getSearchClient()` to return an object that has the methods `get(searchterm, callback)` and `destroy()`. 

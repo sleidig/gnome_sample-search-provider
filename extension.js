@@ -50,8 +50,8 @@ const _ = Gettext.gettext;
 const APP_NAME = 'Sample Search';
 const ICON_NAME = 'sample-search';
 const APP_COMMAND_FACTORY = (terms => { return 'xdg-open http://www.google.com/search?q=' + terms; });
-const SEARCH_TERMS_FILTER = (terms => { return (terms[0].substring(0, 2) === 'd:' || terms[0].substring(0, 2) === 's:'); });
-const SEARCH_CLIENT = Extension.imports.search_client_sample; // see search_client_sample.js
+const SEARCH_TERMS_FILTER = (terms => { return (terms[0].substring(0, 5) === 'demo:'); }); // display the search provider only if search term by user starts with "demo:"
+const SEARCH_CLIENT = Extension.imports.search_client_sample_from_console; // see search_client_sample_from_web.js or search_client_sample_from_console.js
 
 
 
