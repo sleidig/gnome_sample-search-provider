@@ -102,7 +102,6 @@ class SampleSearchClient {
 
         let sampleItem1 = {
             id: 'index_'+1,
-            label: 'Sample 1',
             name: 'Sample 1',
             url: 'http://www.google.com',
             description: 'these details are just examples'
@@ -111,7 +110,6 @@ class SampleSearchClient {
 
         let sampleItem2 = {
             id: 'index_'+2,
-            label: 'Another One',
             name: 'Another One',
             url: 'http://www.google.com',
             description: 'who knows ...'
